@@ -1,0 +1,67 @@
+#!/bin/bash
+# http://jafrog.com/2013/11/23/colors-in-terminal.html
+
+# there are 3 different ways to set ansi colored text.
+
+# method 1: use hard fixed 16 colors
+#        2: use a colormap, giving 256 user programmable colors.
+#        3: explict RGB each color is 8bits wide.
+#
+
+
+# method 2 :If color code is prefixed by >>> 38;5 <<<< it is interpreted as use the 256 colormap
+#           E.g. \e[38;5;91m will color following text purple, 
+# 
+# method 1 :but no >>> 38;5 <<< means just old classic hard predefined 16 colour set
+#           E.g.  \e[91m will indicate simple bright red.
+#
+reset
+TEMP=$(mktemp).tmp
+cat /etc/X11/rgb.txt | sort -k4 > $TEMP
+
+typeset -A color_map
+while read -r RED GREEN BLUE NAME IGNORE; do
+  
+  [[ -z "$IGNORE"  ]] ||  continue # param 5 exists? Indicates names with spaces! DROP'em
+#--------------------------------------------------------------
+  # if you want the xterm color format #RRGGBB use below
+
+  # -v means flip printf into sscanf
+  # each input param (RED GREEN BLUE) will be converted into hex as per %02X
+  # printf works on each variable one by one.
+  # on each conversion, the output variable BIGHEX is auto-shifted by 8Bits
+  # the converted input variable is OR'd into the BIGHEX.
+  # So, it really automatically makes a 24Bit hex number ..... cool
+
+  #printf -v BIGHEX %02x $RED $GREEN $BLUE 
+  #printf "$BIGHEX "
+  #==================================
+
+  #printf "$RED $GREEN $BLUE $NAME\n"
+  #color_map[$NAME]=$BIGHEX
+
+  # just do a stardard ANSI 24bit color declaration
+  #echo "$NAME"; sleep 1
+
+  color_map[$NAME]="$RED;$GREEN;$BLUE"
+
+done < $TEMP
+
+
+color_map["default"]="128,50,155"  # NO SPACES!!!!!
+
+#declare -p color_map
+
+ESC_FGND="\e[38;2"   #start of escape sequence
+ESC_BKGN="\e[48;2"   #start of escape sequence
+CSE="m"         #end of sequence
+
+
+while read -r RED GREEN BLUE NAME IGNORE; do
+  [[ -z "$IGNORE"  ]] ||  continue # param 5 exists? Indicates names with spaces! DROP'em
+
+  SEQUENCE="${ESC_FGND};${color_map["$NAME"]}${CSE}"
+  printf '\n%b %20s =\t%s' $SEQUENCE  $NAME $SEQUENCE 
+done < $TEMP
+
+rm  $TEMP
