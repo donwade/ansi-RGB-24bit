@@ -1,0 +1,138 @@
+#!/bin/bash
+# http://jafrog.com/2013/11/23/colors-in-terminal.html
+
+# there are 3 different ways to set ansi colored text.
+
+# method 1: use hard fixed 16 colors
+#        2: use a colormap, giving 256 user programmable colors.
+#        3: explict RGB each color is 8bits wide.
+#
+
+# this file only shows how the 256 colormap mode is used.
+# setting of any color entry is not done here.
+
+
+#If color code is prefixed by >>> 38;5 <<<< it is interpreted as use the 256 colormap
+#    E.g. \e[38;5;91m will color following text purple, 
+# 
+# but no >>> 38;5 <<< means just old classic hard predefined 16 colour set
+#    E.g.  \e[91m will indicate simple bright red.
+#
+#  Basic 8 colors 	             30..37
+#  Basic "high contrast" colors  90..97
+#  xterm-256 colors 	          0..255
+#
+# And a set of text decoration indicators that should be placed right after the color code:
+# Bold          1
+# Underscore 	4
+# Background 	3
+
+#    Blue = 34
+#    Green = 32
+#    Light Green = 1;32
+#    Cyan = 36
+#    Red = 31
+#    Purple = 35
+#    Brown = 33
+#    Yellow = 1;33
+#    Bold White = 1;37
+#    Light Grey = 0;37
+#    Black = 30
+#    Dark Grey= 1;30
+#    
+#    The first number is the style (1=bold), followed by a semicolon, and then the actual number of the color, possible styles (effects) are:
+#    
+#    0   = default colour
+#    1   = bold
+#    4   = underlined
+#    5   = flashing text (disabled on some terminals)
+#    7   = reverse field (exchange foreground and background color)
+#    8   = concealed (invisible)
+#    
+#    The possible backgrounds:
+#    
+#    40  = black background
+#    41  = red background
+#    42  = green background
+#    43  = orange background
+#    44  = blue background
+#    45  = purple background
+#    46  = cyan background
+#    47  = grey background
+#    100 = dark grey background
+#    101 = light red background
+#    102 = light green background
+#    103 = yellow background
+#    104 = light blue background
+#    105 = light purple background
+#    106 = turquoise background
+#    107 = white background
+#    
+#    All possible colors:
+#    
+#    30  = black
+#    31  = red
+#    32  = green
+#    33  = orange
+#    34  = blue
+#    35  = purple
+#    36  = cyan
+#    37  = grey
+#    90  = dark grey
+#    91  = light red
+#    92  = light green
+#    93  = yellow
+#    94  = light blue
+#    95  = light purple
+#    96  = turquoise
+#    97  = white
+#    
+
+# not terminator doesn't do 256 colours very well
+reset
+
+printf "\n---------------------------------\nsimple 256 colors (note '38;5' invokes 256 mode\n\n"
+
+for code in {0..255}; do 
+    foo=$(($code % 4))
+    [ $foo == 0 ] && echo
+#              |exec colour 256 |printit | reset
+    echo -en  "\e[38;5;${code}m"'\\e[38;5;'"$code"m"\e[0m\t"
+  done
+echo
+
+printf "\n----------- simple 8 colours ------------------\n"
+printf "    ;1 indicates bold\n"
+printf "    ;3 indicates background\n"
+printf "    ;4 indicates underscore\n"
+
+
+printf "\n---------------------------------\nsimple 8 colors (30-37 series)\n\n"
+for code in {30..37}; do \
+    echo -en "  \e[${code}m"   '\\e['"${code}"'m'   "\e[0m"; \
+    echo -en "  \e[${code};1m" '\\e['"${code}"';1m' "\e[0m"; \
+    echo -en "  \e[${code};3m" '\\e['"${code}"';3m' "\e[0m"; \
+    echo -e  "  \e[${code};4m" '\\e['"${code}"';4m' "\e[0m"; \
+done
+
+printf "\n---------------------------------\nsimple 8 hi contrast (90-97 series)\n\n"
+for code in {90..97}; do \
+    echo -en "  \e[${code}m"   '\\e['"${code}"'m'   "\e[0m"; \
+    echo -en "  \e[${code};1m" '\\e['"${code}"';1m' "\e[0m"; \
+    echo -en "  \e[${code};3m" '\\e['"${code}"';3m' "\e[0m"; \
+    echo -e  "  \e[${code};4m" '\\e['"${code}"';4m' "\e[0m"; \
+done
+
+printf "\n----------------------------------\n another way (interesting script!)\n\n"
+# https://askubuntu.com/questions/466198/how-do-i-change-the-color-for-directories-with-ls-in-the-console
+
+for i in 00{2..8} {0{3,4,9},10}{0..7}
+do echo -e "$i \e[0;${i}mabcdefgh ABCDEFGH 0123456\e[00m  \e[1;${i}mabcdefgh ABCDEFGH 0123456\e[00m"
+done
+
+for i in 00{2..8} {0{3,4,9},10}{0..7}
+do for j in 0 1
+   do echo -e "$j;$i \e[$j;${i}mabcdefgh ABCDEFGH 0123456\e[00m"
+   done
+done
+
